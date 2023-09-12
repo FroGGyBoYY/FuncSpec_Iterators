@@ -70,6 +70,12 @@ void my_advance(Iterator& it, int n) {
 }
 thats why we will use this ->
 */
+/*
+	I am trying to solve this problem by using
+	template spetsialisation here  |
+								  \|/
+								  \|/
+
 template<typename Iterator,typename IteratorCategory>
 void my_advance_helper(Iterator& iter, int n, IteratorCategory) {
 	for (int i = 0; i < n; ++i, ++iter);
@@ -83,8 +89,20 @@ template<typename Iterator>
 void my_advance(Iterator& iter, int n) {
 	my_advance_helper(iter, n, std::iterator_traits<Iterator>::iterator_category());
 }
+*/
 
-// 3.2
+//But this problem can been solved by constexpr behind if
+
+template <typename Iterator>
+void my_advance(Iterator& iter, int n) {
+	if constexpr(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, typename std::random_access_iterator_tag>::value) {
+		iter += n;
+	}
+	else {
+		if (n < 0) { for (int i = 0; i < n; ++i, --iter); }
+		else { for (int i = 0; i < n; ++i, ++iter); }
+	}
+}
 
 
 
@@ -96,7 +114,7 @@ class _Const_Iterator {
 };
 //	5 Reverse iterators
 //	If iterator support bidirectional_iterator 
-//	thai it actually support reverse iterator
+//	that it actually support reverse iterator
 template<typename Iterator>
 class _Reverse_Iterator {
 private:
@@ -136,7 +154,7 @@ public:
 //	 6 Output iterator
 //	 back_insert front insert
 //	 for copy_if -> containers
-//---------------- So here i m trying to create my own iterator
+//---------------- So here i am trying to create my own iterator
 template <typename T>
 class _vector {
 private:
@@ -281,6 +299,17 @@ int main() {
 
 	std::cout << "\n\n\t Try show my_vec with Iterators\n" << std::endl;
 	_vector<int> my_vec{ 1,2,3,4,5,6,7,8,9,10,11,12 };
+
+	_vector<int>::Iterator it = my_vec.begin();
+	_vector<int>::Const_Iterator c_it = my_vec.cbegin();
+
+	*it = 100;
+	//*c_it = 200; error -> const iterator
+
+	std::cout <<"\nFirst my_vec element = " << *it << std::endl;
+	std::cout << "\nFirst CONST element  = " << *c_it << std::endl;
+
+	std::cout << "\n\t Try show my_vec with Iterators\n" << std::endl;
 	for (_vector<int>::Iterator it = my_vec.begin(); it != my_vec.end(); ++it) {
 		std::cout << *it << ' ';
 	}
