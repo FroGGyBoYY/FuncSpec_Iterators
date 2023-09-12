@@ -220,10 +220,61 @@ public:
 	Reverse_Iterator rbegin() const noexcept { return Reverse_Iterator((arr + size - 1)); }
 	Reverse_Iterator rend() const noexcept { return Reverse_Iterator(std::prev(arr, 1)); }
 
-
-
+	void clear() noexcept {
+		size = 0;
+		delete[] arr;
+		arr = nullptr;
+	}
+	bool empty() const noexcept{
+		return (size ? 0 : 1);
+	}
+	void push_back(const T& item) {
+		++size;
+		T* temp = new T[size];
+		memcpy(temp, arr, size - 1);
+		temp[size - 1] = item;
+		delete[]arr;
+		arr = temp;
+	}
+	void pop_back() {
+		if (!(*this->empty())) {
+			--size;
+			T* temp = new T[size];
+			memcpy(temp, arr, size);
+			delete[]arr;
+			arr = temp;
+		}
+	}
+	size_t size() const noexcept {
+		return size;
+	}
+	T& operator[](const size_t& item) {
+		if (item + 1 > size || empty) {
+			std::cout << "Check item count" << std::endl;
+		}
+		else {
+			return *(arr + i);
+		}
+	}
+	T& font()const noexcept {
+		if (empty()) {
+			std::cout << "_vector is empty" << std::endl;
+		}
+		else {
+			return arr[0];
+		}
+	}
+	T& back() const noexcept {
+		if (empty()) {
+			std::cout << "_vector is empty" << std::endl;
+		}
+		else {
+			return arr[size - 1];
+		}
+	}
 	~_vector() { delete[]arr; }
 };
+std::vector<int> aaa;
 
 
 
@@ -233,6 +284,7 @@ public:
 //	7 Sream iterators
 //	
 int main() {
+	
 	//1 excaptions try catch throw
 	try {
 		g();
@@ -318,5 +370,6 @@ int main() {
 	for (_vector<int>::Reverse_Iterator r_it = my_vec.rbegin(); r_it != my_vec.rend(); ++r_it) {
 		std::cout << *r_it << ' ';
 	}
+
 	return 0;
 }
