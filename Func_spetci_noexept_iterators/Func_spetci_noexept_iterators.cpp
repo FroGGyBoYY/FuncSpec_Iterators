@@ -121,6 +121,15 @@ public:
 		++* this;
 		return copy;
 	}
+	auto operator*() -> decltype(*iter) {
+		return *iter;
+	}
+	bool operator==(const _Reverse_Iterator<Iterator>& it) {
+		return (iter == it.iter);
+	}
+	bool operator!=(const _Reverse_Iterator<Iterator>& it) {
+		return !(*this == it);
+	}
 	Iterator base() const { return iter; }
 };
 
@@ -190,6 +199,8 @@ public:
 	using Reverse_Iterator = _Reverse_Iterator<Iterator>;
 	using Const_Reverse_Iterator = _Reverse_Iterator<Const_Iterator>;
 
+	Reverse_Iterator rbegin() const noexcept { return Reverse_Iterator((arr + size - 1)); }
+	Reverse_Iterator rend() const noexcept { return Reverse_Iterator(std::prev(arr, 1)); }
 
 
 
@@ -272,6 +283,11 @@ int main() {
 	_vector<int> my_vec{ 1,2,3,4,5,6,7,8,9,10,11,12 };
 	for (_vector<int>::Iterator it = my_vec.begin(); it != my_vec.end(); ++it) {
 		std::cout << *it << ' ';
+	}
+
+	std::cout << "\n\n\t Try show my_vec with Reverse_Iterators\n" << std::endl;
+	for (_vector<int>::Reverse_Iterator r_it = my_vec.rbegin(); r_it != my_vec.rend(); ++r_it) {
+		std::cout << *r_it << ' ';
 	}
 	return 0;
 }
