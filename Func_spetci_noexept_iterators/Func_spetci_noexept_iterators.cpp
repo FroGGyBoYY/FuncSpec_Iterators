@@ -2,6 +2,7 @@
 #include<vector>
 #include<iterator>
 #include<list>
+#include<algorithm>
 
 //	1 Check of working excaptions in functions
 //not in constructor and destructor
@@ -245,7 +246,7 @@ public:
 			arr = temp;
 		}
 	}
-	size_t size() const noexcept {
+	size_t _size() const noexcept {
 		return size;
 	}
 	T& operator[](const size_t& item) {
@@ -253,7 +254,7 @@ public:
 			std::cout << "Check item count" << std::endl;
 		}
 		else {
-			return *(arr + i);
+			return *(arr + item);
 		}
 	}
 	T& font()const noexcept {
@@ -274,12 +275,38 @@ public:
 	}
 	~_vector() { delete[]arr; }
 };
-std::vector<int> aaa;
+
 
 
 
 //---------------- End of creating my own iterator
 
+//OUTPUT iterartors
+template<typename Container>
+class Back_Insert_Iterator {
+private:
+	Container& container;
+public:
+	explicit Back_Insert_Iterator(Container& _container) :container(_container) {}
+	Back_Insert_Iterator<Container>& operator++() { return *this; }
+	Back_Insert_Iterator<Container>& operator*()  { return *this; }
+	Back_Insert_Iterator<Container>& operator=(const typename Container::value_type& item) {
+		container.push_back(item);
+		return *this;
+	}
+	Back_Insert_Iterator<Container>& operator=(const typename Container::value_type&& item) {
+		container.push_back(std::move(item));
+		return *this;
+	}
+	Back_Insert_Iterator<Container>& operator=(const Back_Insert_Iterator<Container>& b_iter) {
+		container = b_iter.container;
+		return *this;
+	}
+};
+template<typename Container>
+Back_Insert_Iterator<Container> Back_Inserter(Container& container) {
+	return Back_Insert_Iterator<Container>(container);
+}
 
 //	7 Sream iterators
 //	
@@ -370,6 +397,21 @@ int main() {
 	for (_vector<int>::Reverse_Iterator r_it = my_vec.rbegin(); r_it != my_vec.rend(); ++r_it) {
 		std::cout << *r_it << ' ';
 	}
+	std::cout << std::endl;
+	
+	// OUTPUT Iterators
+	std::list<int> kekw = { 1,2,3,4 };
+	std::vector<int> lmao;
+	std::vector<int> ohio;
+
+
+	std::copy(kekw.begin(), kekw.end(), std::back_inserter(lmao));
+	for (auto x : lmao) { std::cout << x << ' '; }
+	std::cout << std::endl;
+
+
+	std::copy(kekw.begin(), kekw.end(),Back_Insert_Iterator<std::vector<int>>(ohio));
+	for (auto x : ohio) { std::cout << x << ' '; }
 
 	return 0;
 }
