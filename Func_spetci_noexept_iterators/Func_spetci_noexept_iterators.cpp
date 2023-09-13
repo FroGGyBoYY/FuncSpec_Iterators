@@ -105,6 +105,19 @@ void my_advance(Iterator& iter, int n) {
 	}
 }
 
+template<typename Iterator>
+size_t my_distance(Iterator& first_it, const Iterator& second_it) {
+	if constexpr (std::is_same<typename std::iterator_traits<Iterator>::iterator_category, typename std::random_access_iterator_tag>::value) {
+		return second_it - first_it;
+	}
+	else {
+		size_t result = 0;
+		for (; first_it != second_it; ++result, ++first_it);
+		return result;
+	}
+}
+
+
 
 
 //	4 Const iterator
@@ -210,16 +223,26 @@ public:
 	using Iterator = Common_Iterator<false>;
 	using Const_Iterator = Common_Iterator<true>;
 
-	Iterator begin() const noexcept { return arr; }
-	Iterator end() const noexcept { return (arr + size); }
-	Const_Iterator cbegin() const noexcept { return arr; }
-	Const_Iterator cend() const noexcept { return (arr + size); }
+	Iterator begin() const noexcept { 
+		return arr;
+	}
+	Iterator end() const noexcept { 
+		return (arr + size); }
+	Const_Iterator cbegin() const noexcept { return arr;
+	}
+	Const_Iterator cend() const noexcept {
+		return (arr + size);
+	}
 
 	using Reverse_Iterator = _Reverse_Iterator<Iterator>;
 	using Const_Reverse_Iterator = _Reverse_Iterator<Const_Iterator>;
 
-	Reverse_Iterator rbegin() const noexcept { return Reverse_Iterator((arr + size - 1)); }
-	Reverse_Iterator rend() const noexcept { return Reverse_Iterator(std::prev(arr, 1)); }
+	Reverse_Iterator rbegin() const noexcept { 
+		return Reverse_Iterator((arr + size - 1));
+	}
+	Reverse_Iterator rend() const noexcept {
+		return Reverse_Iterator(std::prev(arr, 1));
+	}
 
 	void clear() noexcept {
 		size = 0;
@@ -288,9 +311,17 @@ private:
 	Container& container;
 public:
 	explicit Back_Insert_Iterator(Container& _container) :container(_container) {}
-	Back_Insert_Iterator<Container>& operator++() { return *this; }
-	Back_Insert_Iterator<Container>& operator*()  { return *this; }
-	Back_Insert_Iterator<Container>& operator=(const typename Container::value_type& item) {
+	Back_Insert_Iterator<Container>& operator++() noexcept { 
+		return *this; 
+	}
+	Back_Insert_Iterator<Container> operator++(int) noexcept {
+		Back_Insert_Iterator<Container> copy = *this;
+		return copy; 
+	}
+	Back_Insert_Iterator<Container>& operator*() noexcept { 
+		return *this;
+	}
+	Back_Insert_Iterator<Container>& operator=(const typename Container::value_type& item)  {
 		container.push_back(item);
 		return *this;
 	}
@@ -308,8 +339,45 @@ Back_Insert_Iterator<Container> Back_Inserter(Container& container) {
 	return Back_Insert_Iterator<Container>(container);
 }
 
+
+
+// Unary Predicate for std::copy_if()
+//bool IsEven(int x) { return x % 2 == 0; }
+struct IsEven {
+	bool operator()(int x) { return x % 2 == 0; }
+};
+
 //	7 Sream iterators
 //	
+template<typename T>
+class Istream_Iterator {
+private:
+	std::istream& in;
+	T value;
+public:
+	Istream_Iterator(std::istream& in) :in(in) { in >> value; }
+	Istream_Iterator<T>& operator++() {
+		in >> value;
+		return *this;
+	}
+	Istream_Iterator<T> operator++(int) {
+		in >> value;
+		Istream_Iterator<T> copy = *this;
+		return copy;
+	}
+	Istream_Iterator<T>& operator=(const Istream_Iterator<T>& _in) {
+		in = _in.in;
+		value = _in.value;
+		return *this;
+	}
+	T& operator*() {
+		return value;
+	}
+	
+
+};
+
+
 int main() {
 	
 	//1 excaptions try catch throw
@@ -356,7 +424,8 @@ int main() {
 	std::cout << "First iterator is - " << *_m_it_b << std::endl;
 	my_advance(_m_it_b, 3);
 	std::cout << "But now he is - " << *_m_it_b << std::endl;
-	
+	std::cout << "\n\tShow my_distance work\t" << std::distance(_m_it_b, _m_it_e) << std::endl;
+
 	//	4  Const iterator
 	std::list<int> n_lst = { 1,2,3,4,5,6,7,8,9 };
 	
@@ -400,18 +469,49 @@ int main() {
 	std::cout << std::endl;
 	
 	// OUTPUT Iterators
-	std::list<int> kekw = { 1,2,3,4 };
+	std::list<int> kekw = { 1,2,3,4,5,6,7,8,9,10,11,12 };
 	std::vector<int> lmao;
-	std::vector<int> ohio;
 
 
 	std::copy(kekw.begin(), kekw.end(), std::back_inserter(lmao));
 	for (auto x : lmao) { std::cout << x << ' '; }
+	lmao.clear();
 	std::cout << std::endl;
 
 
-	std::copy(kekw.begin(), kekw.end(),Back_Insert_Iterator<std::vector<int>>(ohio));
-	for (auto x : ohio) { std::cout << x << ' '; }
+	std::copy(kekw.begin(), kekw.end(),Back_Insert_Iterator<std::vector<int>>(lmao));
+	for (auto x : lmao) { std::cout << x << ' '; }
+	lmao.clear();
+	std::cout << std::endl;
+
+	std::copy(kekw.begin(), kekw.end(), Back_Inserter(lmao));
+	for (auto x : lmao) { std::cout << x << ' '; }
+	lmao.clear();
+	std::cout << std::endl;
+
+	std::copy_if(kekw.begin(), kekw.end(), Back_Inserter(lmao), IsEven());
+	for (auto x : lmao) { std::cout << x << ' '; }
+	lmao.clear();
+	std::cout << std::endl;
+
+	//Testing stream iterators
+	std::cout << "\tTesting isteram iterator" << std::endl;
+	std::istream_iterator<int> _it(std::cin);
+	for (int i = 0; i < 4; ++i, ++_it) {
+		lmao.push_back(*_it);
+		std::cout << lmao[i] << ' ';
+	}
+	lmao.clear();
+	std::cout << std::endl;
+
+	std::cout << "\tTesting isteram iterator" << std::endl;
+	Istream_Iterator<int> my_it(std::cin);
+	for (int i = 0; i < 4; ++i, ++my_it) {
+		lmao.push_back(*my_it);
+		std::cout << lmao[i] << ' ';
+	}
+	lmao.clear();
+	std::cout << std::endl;
 
 	return 0;
 }
